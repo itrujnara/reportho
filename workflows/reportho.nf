@@ -11,6 +11,7 @@ include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pi
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_reportho_pipeline'
 
 include { GET_ORTHOLOGS          } from '../subworkflows/local/get_orthologs'
+include { SCORE_ORTHOLOGS        } from '../subworkflows/local/score_orthologs'
 include { ALIGN                  } from '../subworkflows/local/align'
 include { MAKE_TREES             } from '../subworkflows/local/make_trees'
 include { REPORT                 } from '../subworkflows/local/report'
@@ -57,10 +58,18 @@ workflow REPORTHO {
     )
 
     ch_versions    = ch_versions.mix(GET_ORTHOLOGS.out.versions)
+
+    SCORE_ORTHOLOGS (
+        GET_ORTHOLOGS.out.seqinfo,
+        GET_ORTHOLOGS.out.orthologs
+    )
+
+    ch_versions = ch_versions.mix(SCORE_ORTHOLOGS.out.versions)
+
     ch_samplesheet = ch_samplesheet_query.mix (ch_samplesheet_fasta)
 
-    ch_multiqc_files = ch_multiqc_files.mix(GET_ORTHOLOGS.out.aggregated_stats.map {it[1]})
-    ch_multiqc_files = ch_multiqc_files.mix(GET_ORTHOLOGS.out.aggregated_hits.map {it[1]})
+    ch_multiqc_files = ch_multiqc_files.mix(SCORE_ORTHOLOGS.out.aggregated_stats.map {it[1]})
+    ch_multiqc_files = ch_multiqc_files.mix(SCORE_ORTHOLOGS.out.aggregated_hits.map {it[1]})
 
     ch_seqhits   = ch_samplesheet.map { [it[0], []] }
     ch_seqmisses = ch_samplesheet.map { [it[0], []] }
@@ -71,7 +80,7 @@ workflow REPORTHO {
     ch_fastme    = ch_samplesheet.map { [it[0], []] }
 
     if (!params.skip_downstream) {
-        ch_sequences_input = GET_ORTHOLOGS.out.orthologs.join(ch_fasta_query)
+        ch_sequences_input = SCORE_ORTHOLOGS.out.orthologs.join(ch_fasta_query)
 
         FETCH_SEQUENCES_ONLINE (
             ch_sequences_input
@@ -85,7 +94,7 @@ workflow REPORTHO {
 
         if (params.use_structures) {
             FETCH_AFDB_STRUCTURES (
-                GET_ORTHOLOGS.out.orthologs
+                SCORE_ORTHOLOGS.out.orthologs
             )
 
             ch_strhits = FETCH_AFDB_STRUCTURES.out.hits
@@ -125,12 +134,12 @@ workflow REPORTHO {
             params.skip_iqtree,
             params.skip_fastme,
             GET_ORTHOLOGS.out.seqinfo,
-            GET_ORTHOLOGS.out.score_table,
-            GET_ORTHOLOGS.out.orthologs,
-            GET_ORTHOLOGS.out.supports_plot.map { [it[0], it[2]]},
-            GET_ORTHOLOGS.out.venn_plot.map { [it[0], it[2]]},
-            GET_ORTHOLOGS.out.jaccard_plot.map { [it[0], it[2]]},
-            GET_ORTHOLOGS.out.stats,
+            SCORE_ORTHOLOGS.out.score_table,
+            SCORE_ORTHOLOGS.out.orthologs,
+            SCORE_ORTHOLOGS.out.supports_plot.map { [it[0], it[2]]},
+            SCORE_ORTHOLOGS.out.venn_plot.map { [it[0], it[2]]},
+            SCORE_ORTHOLOGS.out.jaccard_plot.map { [it[0], it[2]]},
+            SCORE_ORTHOLOGS.out.stats,
             ch_seqhits,
             ch_seqmisses,
             ch_strhits,
