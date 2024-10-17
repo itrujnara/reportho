@@ -74,7 +74,7 @@ def fetch_seqs_uniprot(oma_misses: list, prefix: str) -> None:
 
 def main() -> None:
     if len(sys.argv) < 3:
-        raise ValueError("Too few arguments. Usage: fetch_sequences.py <path> <prefix>")
+        raise ValueError("Too few arguments. Usage: fetch_oma_sequences.py <path> <prefix>")
     oma_misses = fetch_seqs_oma(sys.argv[1], sys.argv[2])
     fetch_seqs_uniprot(oma_misses, sys.argv[2])
 
