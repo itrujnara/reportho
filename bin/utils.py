@@ -103,6 +103,9 @@ def split_ids_by_format(ids: list[str]) -> dict[str, list[str]]:
 
 @dataclass
 class SequenceInfo():
+    """
+    Information about a sequence for the fetching step.
+    """
     prot_id: str
     taxid: str
     sequence: str
@@ -115,6 +118,10 @@ class SequenceInfo():
     
 
 def list_to_file(items: list, path: str):
+    """
+    Print all elements of a list to a text file, one item per line.
+    Warning: will overwrite the text file if it exists.
+    """
     with open(path, 'w') as f:
         for i in items:
             f.write(i + '\n')
