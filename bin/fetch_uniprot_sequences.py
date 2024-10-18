@@ -5,10 +5,9 @@
 
 import io
 import sys
-import requests
 
 from Bio import SeqIO
-from utils import safe_get, split_ids
+from utils import list_to_file, safe_get, SequenceInfo, split_ids
 
 
 def fetch_slice(ids: list[str]) -> list[SeqIO.SeqRecord]:
@@ -26,26 +25,41 @@ def fetch_slice(ids: list[str]) -> list[SeqIO.SeqRecord]:
     return list(seqs)
 
 
-def fetch_ebi(ids: list[str]) -> list[str]:
+def fetch_ebi(ids: list[str]) -> list[SequenceInfo]:
     seqs = []
     for s in split_ids(ids, 100):
         seqs = seqs + fetch_slice(s)
-    return [reform_fasta(seq) for seq in seqs]
+    return [to_seqinfo(seq) for seq in seqs]
 
 
-def reform_fasta(entry: SeqIO.SeqRecord) -> str:
+def to_seqinfo(entry: SeqIO.SeqRecord) -> SequenceInfo:
     prot_id = entry.description.split('|')[1]
-    tax_id = entry.description.split("OX=")[1].split(' ')[0]
+    taxid = entry.description.split("OX=")[1].split(' ')[0]
     seq = str(entry.seq)
-    return f">{prot_id}|{tax_id}\n{seq}"
+    return SequenceInfo(prot_id = prot_id,
+                        taxid = taxid,
+                        sequence = seq)
 
 
 def main():
-   f = open(sys.argv[1])
-   ids = f.read().splitlines()
-   seqs = fetch_ebi(ids)
-   for i in seqs:
-       print(i)
+    if len(sys.argv) < 3:
+        raise ValueError("Too few arguments. Usage: fetch_uniprot_sequences.py <ids_path> <prefix>")
+    
+    with open(sys.argv[1]) as f:
+        ids = f.read().splitlines()
+
+    seqs = fetch_ebi(ids)
+    seqs_valid = [i for i in seqs if i.is_valid()]
+
+    for i in seqs_valid:
+        print(i)
+
+    ids_valid = set([i.prot_id for i in seqs_valid])
+    ids_invalid = set(ids) - ids_valid
+
+    prefix = sys.argv[2]
+    list_to_file(list(ids_valid), f"{prefix}_uniprot_hits.txt")
+    list_to_file(list(ids_invalid), f"{prefix}_uniprot_misses.txt")
 
 
 if __name__ == "__main__":
