@@ -3,6 +3,7 @@
 # Includes code written by UniProt contributors published under CC-BY 4.0 license
 
 from collections import defaultdict as dd
+from dataclasses import dataclass
 import re
 import sys
 import time
@@ -98,3 +99,22 @@ def split_ids_by_format(ids: list[str]) -> dict[str, list[str]]:
             ids_format["unknown"].append(i)
 
     return ids_format
+
+
+@dataclass
+class SequenceInfo():
+    prot_id: str
+    taxid: str
+    sequence: str
+
+    def __str__(self):
+        return f">{self.prot_id}|{self.taxid}\n{self.sequence}"
+    
+    def is_valid(self):
+        return self.taxid is not None and self.sequence is not None
+    
+
+def list_to_file(items: list, path: str):
+    with open(path, 'w') as f:
+        for i in items:
+            f.write(i + '\n')
