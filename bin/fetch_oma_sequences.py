@@ -18,9 +18,9 @@ def fetch_slice(ids: list[str]) -> list[SequenceInfo]:
 
     if not res.ok:
         raise ValueError(f"HTTP error: {res.status_code}")
-    
+
     hits = []
-    
+
     for entry in res.json():
         if entry["target"] is not None:
             hits.append(SequenceInfo(prot_id = entry["query_id"],
@@ -40,7 +40,7 @@ def fetch_seqs_oma(ids: list[str]) -> list[SequenceInfo]:
 def main() -> None:
     if len(sys.argv) < 3:
         raise ValueError("Too few arguments. Usage: fetch_oma_sequences.py <ids_path> <prefix>")
-    
+
     with open(sys.argv[1]) as f:
         ids = f.read().splitlines()
 
@@ -54,8 +54,8 @@ def main() -> None:
     ids_invalid = set(ids) - ids_valid
 
     prefix = sys.argv[2]
-    list_to_file(list(ids_valid), f"{prefix}_oma_hits.txt")
-    list_to_file(list(ids_invalid), f"{prefix}_oma_misses.txt")
+    list_to_file(list(ids_valid), f"{prefix}_oma_seq_hits.txt")
+    list_to_file(list(ids_invalid), f"{prefix}_oma_seq_misses.txt")
 
 
 if __name__ == "__main__":
