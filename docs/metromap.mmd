@@ -1,6 +1,7 @@
 %%metro title: nf-core/reportho
 %%metro logo: images/nf-core-reportho_logo_hex_dark.png
 %%metro style: dark
+%%metro diamond_style: symmetric
 %%metro line: main | Main flow | #24b064
 %%metro line: report | Report flow | #0dcaf0
 %%metro line: samplesheets | Samplesheet flow | #f59e0b
@@ -82,17 +83,6 @@ graph LR
         create_msa -->|samplesheets| msa_samplesheet
     end
 
-    subgraph score_orthologs [Score orthologs]
-        make_score_table [Make score table]
-        make_plots [Make plots]
-        calculate_stats [Calculate statistics]
-        filter_hits [Filter hits]
-        
-        make_score_table -->|main| filter_hits
-        make_score_table -->|main| make_plots
-        make_score_table -->|main| calculate_stats
-    end
-
     subgraph report [Report]
         dump_params [Dump parameters]
         generate_reports [Generate reports]
@@ -106,6 +96,17 @@ graph LR
         multiqc -->|main| summary_report
     end
 
+    subgraph score_orthologs [Score orthologs]
+        make_score_table [Make score table]
+        make_plots [Make plots]
+        calculate_stats [Calculate statistics]
+        filter_hits [Filter hits]
+        
+        make_score_table -->|main| filter_hits
+        make_score_table -->|main| make_plots
+        make_score_table -->|main| calculate_stats
+    end
+
     %% inter-section connectors
     id_tax -->|main| _ortho_entry
     _ortho_exit -->|main| source_split
@@ -116,15 +117,15 @@ graph LR
     source_merge -->|samplesheets| create_msa
     filter_hits -->|samplesheets| create_msa
 
-    %% id_tax -->|report| generate_reports
-    %% oma_online -->|report| generate_reports
-    %% oma_local -->|report| generate_reports
-    %% panther_online -->|report| generate_reports
-    %% panther_local -->|report| generate_reports
-    %% inspector_online -->|report| generate_reports
-    %% eggnog_local -->|report| generate_reports
-    %% create_idmap -->|report| generate_reports
-    %% make_score_table -->|report| generate_reports
-    %% filter_hits -->|report| generate_reports
-    %% make_plots -->|report| generate_reports
-    %% calculate_stats -->|report| generate_reports
+    id_tax -->|report| generate_reports
+    oma_online -->|report| generate_reports
+    oma_local -->|report| generate_reports
+    panther_online -->|report| generate_reports
+    panther_local -->|report| generate_reports
+    inspector_online -->|report| generate_reports
+    eggnog_local -->|report| generate_reports
+    create_idmap -->|report| generate_reports
+    make_score_table -->|report| generate_reports
+    filter_hits -->|report| generate_reports
+    make_plots -->|report| generate_reports
+    calculate_stats -->|report| generate_reports
